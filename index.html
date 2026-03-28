@@ -142,9 +142,9 @@
             <input type="text" id="search-input" placeholder="O que vamos pedir?" oninput="filtrarProdutos()">
         </div>
         <div class="filter-chips">
-            <button class="chip active" onclick="setFilter('todos', this)">🍔 Tudo</button>
+            <!-- Removido o botão "Tudo" e colocado Guarnições como primeiro -->
+            <button class="chip active" onclick="setFilter('Guarnições', this)">🍟 Guarnições</button>
             <button class="chip" onclick="setFilter('Bebidas', this)">🥤 Bebidas</button>
-            <button class="chip" onclick="setFilter('Guarnições', this)">🍟 Guarnições</button>
             <button class="chip" onclick="setFilter('Doces', this)">🍰 Doces</button>
         </div>
     </section>
@@ -177,7 +177,8 @@
         const SEU_TELEFONE = "5585987018832"; 
 
         let todosProdutos = [];
-        let filtroCategoriaAtiva = 'todos';
+        // Agora inicia com 'Guarnições' em vez de 'todos'
+        let filtroCategoriaAtiva = 'Guarnições'; 
         let carrinho = {};
 
         async function carregarDados() {
@@ -191,7 +192,7 @@
                     return {
                         nome: colunas[0]?.trim() || "",
                         preco: parseFloat(colunas[1]),
-                        categoria: colunas[2]?.trim() || "Outros", // Pega a categoria da coluna C
+                        categoria: colunas[2]?.trim() || "Outros",
                         img: colunas[3]?.trim() || ""
                     };
                 }).filter(p => !isNaN(p.preco));
@@ -203,29 +204,22 @@
             }
         }
 
-        // Define o filtro ao clicar no botão
         function setFilter(categoria, elemento) {
             filtroCategoriaAtiva = categoria;
-            
-            // Estilização dos botões
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
             elemento.classList.add('active');
-            
-            filtrarProdutos(); // Aplica a filtragem
+            filtrarProdutos();
         }
 
-        // Função Mestra de Filtragem (Botão + Barra de Busca)
         function filtrarProdutos() {
             const termoBusca = document.getElementById('search-input').value.toLowerCase().trim();
             
             const filtrados = todosProdutos.filter(produto => {
-                // Lógica da Categoria (Botão)
-                const bateCategoria = filtroCategoriaAtiva === 'todos' || 
-                                     produto.categoria.toLowerCase() === filtroCategoriaAtiva.toLowerCase();
+                // Filtra obrigatoriamente pela categoria ativa do botão
+                const bateCategoria = produto.categoria.toLowerCase() === filtroCategoriaAtiva.toLowerCase();
                 
-                // Lógica da Busca (Texto)
-                const bateTexto = produto.nome.toLowerCase().includes(termoBusca) || 
-                                  produto.categoria.toLowerCase().includes(termoBusca);
+                // Filtra também pelo texto digitado (no nome do produto)
+                const bateTexto = produto.nome.toLowerCase().includes(termoBusca);
                 
                 return bateCategoria && bateTexto;
             });
@@ -236,7 +230,7 @@
         function renderizarCardapio(lista) {
             const grid = document.getElementById('cardapio-grid');
             if (lista.length === 0) {
-                grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:50px; color:#999;">Nenhum item encontrado nesta categoria.</p>';
+                grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:50px; color:#999;">Nenhum item encontrado em ${filtroCategoriaAtiva}.</p>`;
                 return;
             }
             grid.innerHTML = lista.map(p => `
@@ -253,7 +247,6 @@
             `).join('');
         }
 
-        // Funções do Carrinho
         function toggleCart() {
             document.getElementById('side-cart').classList.toggle('open');
             document.getElementById('overlay').classList.toggle('active');
@@ -313,7 +306,7 @@
             let totalPedido = 0;
             for (let item in carrinho) {
                 let sub = carrinho[item].qtd * carrinho[item].preco;
-                msg += `✅ *${carrinho[item].qtd}x* ${item} - R$ ${sub.toFixed(2)}%0A`;
+                msg += `✅ *${carrinho[item].qtd}x* ${item} - R$ ${sub.toFixed(2).replace('.', ',')}%0A`;
                 totalPedido += sub;
             }
             msg += `%0A💰 *TOTAL: R$ ${totalPedido.toFixed(2).replace('.', ',')}*`;
