@@ -3,71 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pediu Food - Cardápio Digital</title>
+    <title>Catálogo Digital - Pediu Food</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --neon-orange: #ff8c00;
-            --neon-blue: #00d4ff;
-            --dark-bg: #1a1a1a;
+            --primary: #f37021;
+            --bg: #f8f9fa;
+            --text: #333;
+            --card-bg: #fff;
+            --shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--dark-bg); color: white; margin: 0; text-align: center; }
-        header { padding: 40px; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('sua-imagem-logo.jpg'); background-size: cover; border-bottom: 4px solid var(--neon-orange); }
-        h1 { color: var(--neon-orange); text-shadow: 0 0 10px var(--neon-orange); font-size: 3em; margin: 0; }
-        .slogan { font-style: italic; color: var(--neon-blue); }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+
+        /* Header */
+        header {
+            background: #1a1a1a;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo { font-weight: 800; font-size: 1.2rem; color: var(--primary); }
+        .cart-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; position: relative; }
+        .cart-badge { position: absolute; top: -5px; right: -8px; background: var(--primary); color: white; font-size: 10px; padding: 2px 6px; border-radius: 50%; font-weight: bold; }
+
+        /* Grid de Produtos */
+        .container { padding: 20px 15px; }
+        .grid-produtos { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+            gap: 15px; 
+        }
+
+        .card { 
+            background: var(--card-bg); 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: var(--shadow); 
+            display: flex; 
+            flex-direction: column;
+            transition: transform 0.2s;
+        }
+        .card img { width: 100%; height: 130px; object-fit: cover; background: #eee; }
+        .card-body { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; }
+        .card-body h3 { font-size: 0.95rem; margin-bottom: 8px; color: #222; }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .preco { font-weight: 700; color: var(--primary); font-size: 1rem; }
+        .btn-add-simple { background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+
+        /* Carrinho Lateral (Drawer) */
+        #side-cart {
+            position: fixed;
+            top: 0; right: -100%;
+            width: 85%; max-width: 380px; height: 100%;
+            background: white;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+            z-index: 200;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+        #side-cart.open { right: 0; }
+        .cart-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+        .cart-items-list { flex-grow: 1; overflow-y: auto; padding: 20px; }
         
-        .container { display: flex; flex-wrap: wrap; justify-content: center; padding: 20px; }
-        .card { background: #2a2a2a; border-radius: 15px; margin: 15px; width: 300px; overflow: hidden; border: 1px solid #444; transition: 0.3s; }
-        .card:hover { transform: scale(1.05); border-color: var(--neon-orange); }
-        .card img { width: 100%; height: 200px; object-fit: cover; }
-        .card-info { padding: 15px; }
-        .price { color: #44ff44; font-size: 1.5em; font-weight: bold; }
-        .btn-pedir { background: var(--neon-orange); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        .cart-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #f9f9f9; }
+        .cart-item-info b { display: block; font-size: 0.9rem; }
+        .cart-item-info small { color: #888; }
         
-        footer { padding: 20px; background: #111; font-size: 0.8em; }
+        .qtd-btn-group { display: flex; align-items: center; gap: 12px; background: #f0f0f0; padding: 5px 10px; border-radius: 8px; }
+        .qtd-btn-group button { border: none; background: none; font-weight: bold; font-size: 1.1rem; color: var(--primary); cursor: pointer; }
+
+        .cart-footer-inside { padding: 20px; border-top: 2px solid #eee; background: #fff; }
+        .total-price { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; display: flex; justify-content: space-between; }
+        
+        .btn-finish {
+            background: #25d366; color: white; text-align: center; padding: 15px;
+            border-radius: 10px; text-decoration: none; display: block; font-weight: bold; font-size: 1rem;
+            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);
+        }
+
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 150; display: none; backdrop-filter: blur(2px); }
+        .overlay.active { display: block; }
+        
+        /* Loading animation */
+        #loader { text-align: center; padding: 50px; color: #888; }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>PEDIU FOOD</h1>
-    <p class="slogan">"O Legítimo Pratinho Caseiro da Região!" 👵✨</p>
-</header>
+    <header>
+        <div class="logo">MINHA </div>
+        <button class="cart-btn" onclick="toggleCart()">
+            🛒 <span class="cart-badge" id="cart-count">0</span>
+        </button>
+    </header>
 
-<div class="container">
-    <div class="card">
-        <img src="https://via.placeholder.com/300x200?text=Pratinho+Caseiro" alt="Pratinho Caseiro">
-        <div class="card-info">
-            <h3>Pratinho da Sogra</h3>
-            <p>Arroz soltinho, feijão com tempero secreto, carne de panela e aquela farofinha.</p>
-            <span class="price">R$ 24,90</span>
-            <button class="btn-pedir">Pedir no WhatsApp</button>
+    <main class="container">
+        <div id="loader">Carregando cardápio...</div>
+        <div id="cardapio-grid" class="grid-produtos"></div>
+    </main>
+
+    <!-- Estrutura do Carrinho Lateral -->
+    <div class="overlay" id="overlay" onclick="toggleCart()"></div>
+    <div id="side-cart">
+        <div class="cart-header">
+            <h3>Meu Pedido</h3>
+            <button onclick="toggleCart()" style="background:none; border:none; font-size: 1.5rem; cursor:pointer;">✕</button>
+        </div>
+        
+        <div class="cart-items-list" id="cart-list">
+            <p style="color:#999; text-align:center; margin-top: 50px;">Seu carrinho está vazio.</p>
+        </div>
+
+        <div class="cart-footer-inside" id="cart-footer" style="display: none;">
+            <div class="total-price">
+                <span>Total:</span>
+                <span id="total-val">R$ 0,00</span>
+            </div>
+            <a href="#" class="btn-finish" onclick="enviarPedido()">Finalizar no WhatsApp</a>
         </div>
     </div>
 
-    <div class="card">
-        <img src="https://via.placeholder.com/300x200?text=Batata+Crocante" alt="Batata Frita">
-        <div class="card-info">
-            <h3>Batata Croctch Croctch</h3>
-            <p>Porção generosa de batata frita, sequinha e crocante por fora.</p>
-            <span class="price">R$ 18,00</span>
-            <button class="btn-pedir">Pedir no WhatsApp</button>
-        </div>
-    </div>
+    <script>
+        // --- CONFIGURAÇÕES ---
+        const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwMzPb9pdNIZENQF5fKwG534op_UQmmYxMscfe3jwaqUopg7ALGMEASTmQiPlmWZNMyhBDMDO68F1M/pub?output=csv";
+        const SEU_TELEFONE = "5511999999999"; 
+        // ---------------------
 
-    <div class="card">
-        <img src="https://via.placeholder.com/300x200?text=Pudim+Divino" alt="Sobremesa">
-        <div class="card-info">
-            <h3>Pudim Divino</h3>
-            <p>Sobremesa artesanal com calda de caramelo que derrete na boca.</p>
-            <span class="price">R$ 12,00</span>
-            <button class="btn-pedir">Pedir no WhatsApp</button>
-        </div>
-    </div>
-</div>
+        let carrinho = {};
 
-<footer>
-    <p>© 2026 Pediu Food - Lanchonete Urbana | Aberto de Terça a Domingo</p>
-</footer>
+        // 1. Busca os dados da Planilha Google
+        async function carregarDados() {
+            try {
+                const response = await fetch(SHEET_URL);
+                const data = await response.text();
+                
+                // Converte CSV para Array de Objetos
+                const linhas = data.split('\n').filter(linha => linha.trim() !== "");
+                const produtos = linhas.slice(1).map(linha => {
+                    const colunas = linha.split(',');
+                    return {
+                        nome: colunas[0]?.trim(),
+                        preco: parseFloat(colunas[1]),
+                        categoria: colunas[2]?.trim(),
+                        img: colunas[3]?.trim()
+                    };
+                }).filter(p => !isNaN(p.preco));
 
+                document.getElementById('loader').style.display = 'none';
+                renderizarCardapio(produtos);
+            } catch (error) {
+                console.error("Erro ao carregar dados:", error);
+                document.getElementById('loader').innerText = "Erro ao carregar cardápio. Verifique o link da planilha.";
+            }
+        }
+
+        // 2. Desenha os produtos na tela
+        function renderizarCardapio(lista) {
+            const grid = document.getElementById('cardapio-grid');
+            grid.innerHTML = lista.map(p => `
+                <article class="card">
+                    <img src="${p.img || 'https://via.placeholder.com/300?text=Sem+Foto'}" alt="${p.nome}">
+                    <div class="card-body">
+                        <h3>${p.nome}</h3>
+                        <div class="card-footer">
+                            <span class="preco">R$ ${p.preco.toFixed(2).replace('.', ',')}</span>
+                            <button class="btn-add-simple" onclick="addToCart('${p.nome}', ${p.preco})">Add</button>
+                        </div>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        // 3. Funções do Carrinho
+        function toggleCart() {
+            document.getElementById('side-cart').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function addToCart(nome, preco) {
+            if (!carrinho[nome]) {
+                carrinho[nome] = { qtd: 1, preco: preco };
+            } else {
+                carrinho[nome].qtd++;
+            }
+            renderCart();
+            // Opcional: Abre o carrinho ao adicionar o primeiro item
+            // if (Object.keys(carrinho).length === 1 && carrinho[nome].qtd === 1) toggleCart();
+        }
+
+        function changeQtd(nome, delta) {
+            carrinho[nome].qtd += delta;
+            if (carrinho[nome].qtd <= 0) delete carrinho[nome];
+            renderCart();
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cart-list');
+            const footer = document.getElementById('cart-footer');
+            const badge = document.getElementById('cart-count');
+            const totalVal = document.getElementById('total-val');
+            
+            list.innerHTML = '';
+            let total = 0;
+            let itensCount = 0;
+
+            for (let item in carrinho) {
+                let subtotal = carrinho[item].qtd * carrinho[item].preco;
+                total += subtotal;
+                itensCount += carrinho[item].qtd;
+
+                list.innerHTML += `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <b>${item}</b>
+                            <small>R$ ${carrinho[item].preco.toFixed(2).replace('.', ',')}</small>
+                        </div>
+                        <div class="qtd-btn-group">
+                            <button onclick="changeQtd('${item}', -1)">-</button>
+                            <span>${carrinho[item].qtd}</span>
+                            <button onclick="changeQtd('${item}', 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            badge.innerText = itensCount;
+            totalVal.innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            footer.style.display = total > 0 ? 'block' : 'none';
+            
+            if (total === 0) {
+                list.innerHTML = '<p style="color:#999; text-align:center; margin-top: 50px;">Seu carrinho está vazio.</p>';
+            }
+        }
+
+        // 4. Envia o pedido formatado para o WhatsApp
+        function enviarPedido() {
+            let totalPedido = 0;
+            let msg = "🍕 *NOVO PEDIDO - LANCHONETE* %0A%0A";
+            
+            for (let item in carrinho) {
+                let sub = carrinho[item].qtd * carrinho[item].preco;
+                msg += `✅ *${carrinho[item].qtd}x* ${item} (R$ ${sub.toFixed(2)})%0A`;
+                totalPedido += sub;
+            }
+            
+            msg += `%0A━━━━━━━━━━━━━━━%0A💰 *TOTAL DO PEDIDO: R$ ${totalPedido.toFixed(2)}* %0A━━━━━━━━━━━━━━━%0A%0A*Por favor, confirme meu pedido!*`;
+            
+            const url = `https://wa.me/${SEU_TELEFONE}?text=${msg}`;
+            window.open(url, '_blank');
+        }
+
+        // Inicia o sistema
+        carregarDados();
+    </script>
 </body>
 </html>
