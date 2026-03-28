@@ -58,7 +58,6 @@
         .qtd-btn-group { display: flex; align-items: center; gap: 15px; margin-top: 8px; background: #f1f1f1; width: fit-content; padding: 6px 15px; border-radius: 10px; }
         .qtd-btn-group button { border: none; background: none; color: var(--primary); font-weight: 800; font-size: 1.3rem; cursor: pointer; }
 
-        /* Modal de Personalização */
         #modal-detalhes {
             position: fixed; bottom: -110%; left: 0; width: 100%; height: 90%;
             background: white; z-index: 300; border-radius: 25px 25px 0 0;
@@ -73,10 +72,8 @@
             background: #f9f9f9; padding: 14px; border-radius: 12px; margin-bottom: 6px; 
             cursor: pointer; font-size: 0.95rem; border: 1px solid transparent;
         }
-        .opcao-row:active { background: #f0f0f0; }
         .opcao-row input { width: 20px; height: 20px; accent-color: var(--primary); }
         
-        /* Seletor de Qtd no Modal */
         .modal-footer { border-top: 1px solid #eee; padding-top: 15px; }
         .modal-qtd-selector {
             display: flex; justify-content: center; align-items: center; gap: 25px;
@@ -142,11 +139,10 @@
             <button onclick="closeModal()" style="border:none; background:none; font-size:1.8rem;">✕</button>
         </div>
         
-        <div class="modal-scroll" id="modal-corpo">
-            </div>
+        <div class="modal-scroll" id="modal-corpo"></div>
 
         <div class="modal-footer">
-            <p style="text-align: center; color: #888; font-size: 0.8rem; margin-bottom: 10px;">Quantidade deste item:</p>
+            <p style="text-align: center; color: #888; font-size: 0.8rem; margin-bottom: 10px;">Quantidade:</p>
             <div class="modal-qtd-selector">
                 <button onclick="mudarQtdModal(-1)">−</button>
                 <span id="modal-qtd-val">1</span>
@@ -216,7 +212,7 @@
                     <div class="card-body">
                         <h3>${p.nome}</h3>
                         <div class="card-footer">
-                            <span class="preco">R$ ${p.preco.toFixed(2).replace('.', ',')}</span>
+                            <span class="preco">A partir de R$ ${p.preco.toFixed(2).replace('.', ',')}</span>
                             <button class="btn-add" onclick="openModal('${p.nome}')">Pedir</button>
                         </div>
                     </div>
@@ -229,22 +225,32 @@
             if (!p) return;
 
             itemSendoEditado = p;
-            qtdNoModal = 1; // Reseta qtd ao abrir
+            qtdNoModal = 1;
             document.getElementById('modal-qtd-val').innerText = qtdNoModal;
             document.getElementById('modal-titulo').innerText = p.nome;
-            
             const corpo = document.getElementById('modal-corpo');
             corpo.innerHTML = '';
 
-            // 1. TAMANHOS (Coluna F)
+            // TAMANHOS COM PREÇOS DIFERENCIADOS (Coluna F)
             if (p.tamanhos.length > 0 && p.tamanhos[0] !== "") {
                 corpo.innerHTML += `<div class="section-title">Escolha o Tamanho:</div>`;
-                p.tamanhos.forEach((tam, index) => {
-                    corpo.innerHTML += `<label class="opcao-row"><span>${tam}</span><input type="radio" name="radio-tamanho" value="${tam}" ${index === 0 ? 'checked' : ''}></label>`;
+                p.tamanhos.forEach((tamRaw, index) => {
+                    const partes = tamRaw.split('(');
+                    const nomeTam = partes[0].trim();
+                    const precoTam = partes[1] ? partes[1].replace(')', '') : p.preco;
+
+                    corpo.innerHTML += `
+                        <label class="opcao-row">
+                            <span>${nomeTam} - <small>R$ ${parseFloat(precoTam).toFixed(2).replace('.',',')}</small></span>
+                            <input type="radio" name="radio-tamanho" 
+                                   data-preco="${precoTam}" 
+                                   data-nome="${nomeTam}" 
+                                   value="${nomeTam}" ${index === 0 ? 'checked' : ''}>
+                        </label>`;
                 });
             }
 
-            // 2. SABORES (Coluna G)
+            // SABORES (Coluna G)
             if (p.sabores.length > 0 && p.sabores[0] !== "") {
                 corpo.innerHTML += `<div class="section-title">Escolha o Sabor:</div>`;
                 p.sabores.forEach((sabor, index) => {
@@ -252,7 +258,7 @@
                 });
             }
 
-            // 3. OPCIONAIS (Coluna E)
+            // OPCIONAIS (Coluna E)
             if (p.opcionais.length > 0 && p.opcionais[0] !== "") {
                 corpo.innerHTML += `<div class="section-title">Opcionais:</div>`;
                 p.opcionais.forEach(op => {
@@ -265,7 +271,6 @@
             document.getElementById('btn-final-add').onclick = adicionarAoCarrinho;
         }
 
-        // Função para aumentar/diminuir dentro do modal
         function mudarQtdModal(delta) {
             qtdNoModal += delta;
             if (qtdNoModal < 1) qtdNoModal = 1;
@@ -273,20 +278,22 @@
         }
 
         function adicionarAoCarrinho() {
-            const tam = document.querySelector('input[name="radio-tamanho"]:checked')?.value || "";
+            const radioTamanho = document.querySelector('input[name="radio-tamanho"]:checked');
+            const precoFinal = radioTamanho ? parseFloat(radioTamanho.dataset.preco) : itemSendoEditado.preco;
+            const tamNome = radioTamanho ? radioTamanho.dataset.nome : "";
             const sab = document.querySelector('input[name="radio-sabor"]:checked')?.value || "";
             const ops = [];
             document.querySelectorAll('.check-opcional:checked').forEach(el => ops.push(el.value));
             
-            const extras = [tam, sab, ...ops].filter(x => x !== "").join(', ');
-            const idUnico = itemSendoEditado.nome + extras;
+            const extras = [tamNome, sab, ...ops].filter(x => x !== "").join(', ');
+            const idUnico = itemSendoEditado.nome + extras + precoFinal;
 
             if (carrinho[idUnico]) {
                 carrinho[idUnico].qtd += qtdNoModal;
             } else {
                 carrinho[idUnico] = {
                     nome: itemSendoEditado.nome,
-                    preco: itemSendoEditado.preco,
+                    preco: precoFinal,
                     qtd: qtdNoModal,
                     detalhes: extras
                 };
@@ -372,5 +379,4 @@
         carregarDados();
     </script>
 </body>
-    </html>
-    
+</html>
