@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pediu Food - Cardápio Digital</title>
+    <style>
+        :root {
+            --neon-orange: #ff8c00;
+            --neon-blue: #00d4ff;
+            --dark-bg: #1a1a1a;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--dark-bg); color: white; margin: 0; text-align: center; }
+        header { padding: 40px; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('sua-imagem-logo.jpg'); background-size: cover; border-bottom: 4px solid var(--neon-orange); }
+        h1 { color: var(--neon-orange); text-shadow: 0 0 10px var(--neon-orange); font-size: 3em; margin: 0; }
+        .slogan { font-style: italic; color: var(--neon-blue); }
+        
+        .container { display: flex; flex-wrap: wrap; justify-content: center; padding: 20px; }
+        .card { background: #2a2a2a; border-radius: 15px; margin: 15px; width: 300px; overflow: hidden; border: 1px solid #444; transition: 0.3s; }
+        .card:hover { transform: scale(1.05); border-color: var(--neon-orange); }
+        .card img { width: 100%; height: 200px; object-fit: cover; }
+        .card-info { padding: 15px; }
+        .price { color: #44ff44; font-size: 1.5em; font-weight: bold; }
+        .btn-pedir { background: var(--neon-orange); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
+        
+        footer { padding: 20px; background: #111; font-size: 0.8em; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>PEDIU FOOD</h1>
+    <p class="slogan">"O Legítimo Pratinho Caseiro da Região!" 👵✨</p>
+</header>
+
+<div class="container">
+    <div class="card">
+        <img src="https://via.placeholder.com/300x200?text=Pratinho+Caseiro" alt="Pratinho Caseiro">
+        <div class="card-info">
+            <h3>Pratinho da Sogra</h3>
+            <p>Arroz soltinho, feijão com tempero secreto, carne de panela e aquela farofinha.</p>
+            <span class="price">R$ 24,90</span>
+            <button class="btn-pedir">Pedir no WhatsApp</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <img src="https://via.placeholder.com/300x200?text=Batata+Crocante" alt="Batata Frita">
+        <div class="card-info">
+            <h3>Batata Croctch Croctch</h3>
+            <p>Porção generosa de batata frita, sequinha e crocante por fora.</p>
+            <span class="price">R$ 18,00</span>
+            <button class="btn-pedir">Pedir no WhatsApp</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <img src="https://via.placeholder.com/300x200?text=Pudim+Divino" alt="Sobremesa">
+        <div class="card-info">
+            <h3>Pudim Divino</h3>
+            <p>Sobremesa artesanal com calda de caramelo que derrete na boca.</p>
+            <span class="price">R$ 12,00</span>
+            <button class="btn-pedir">Pedir no WhatsApp</button>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>© 2026 Pediu Food - Lanchonete Urbana | Aberto de Terça a Domingo</p>
+</footer>
+
+</body>
+</html>
