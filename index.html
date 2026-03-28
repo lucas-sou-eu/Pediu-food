@@ -17,7 +17,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
 
-        /* Header */
+        /* Header Fixo */
         header {
             background: #1a1a1a;
             color: white;
@@ -27,18 +27,64 @@
             align-items: center;
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 110;
         }
         .logo { font-weight: 800; font-size: 1.2rem; color: var(--primary); }
         .cart-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; position: relative; }
         .cart-badge { position: absolute; top: -5px; right: -8px; background: var(--primary); color: white; font-size: 10px; padding: 2px 6px; border-radius: 50%; font-weight: bold; }
 
+        /* Seção de Controles Fixa */
+        .controls-section {
+            padding: 15px;
+            background: #fff;
+            position: sticky;
+            top: 58px;
+            z-index: 100;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .search-container { margin-bottom: 12px; }
+        .search-container input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            font-size: 1rem;
+            background: #fdfdfd;
+        }
+
+        .filter-chips {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            scrollbar-width: none;
+        }
+        .filter-chips::-webkit-scrollbar { display: none; }
+
+        .chip {
+            white-space: nowrap;
+            background: #eee;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+            color: #555;
+        }
+
+        .chip.active { background: var(--primary); color: white; }
+
         /* Grid de Produtos */
-        .container { padding: 20px 15px; }
+        .container { padding: 15px; }
         .grid-produtos { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
             gap: 15px; 
+            margin-top: 10px;
         }
 
         .card { 
@@ -48,16 +94,15 @@
             box-shadow: var(--shadow); 
             display: flex; 
             flex-direction: column;
-            transition: transform 0.2s;
         }
         .card img { width: 100%; height: 130px; object-fit: cover; background: #eee; }
         .card-body { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; }
-        .card-body h3 { font-size: 0.95rem; margin-bottom: 8px; color: #222; }
+        .card-body h3 { font-size: 0.95rem; margin-bottom: 8px; color: #222; min-height: 40px; }
         .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
         .preco { font-weight: 700; color: var(--primary); font-size: 1rem; }
         .btn-add-simple { background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; }
 
-        /* Carrinho Lateral (Drawer) */
+        /* Carrinho Lateral */
         #side-cart {
             position: fixed;
             top: 0; right: -100%;
@@ -66,34 +111,21 @@
             box-shadow: -5px 0 15px rgba(0,0,0,0.2);
             z-index: 200;
             transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
         }
         #side-cart.open { right: 0; }
         .cart-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
         .cart-items-list { flex-grow: 1; overflow-y: auto; padding: 20px; }
-        
         .cart-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #f9f9f9; }
-        .cart-item-info b { display: block; font-size: 0.9rem; }
-        .cart-item-info small { color: #888; }
-        
         .qtd-btn-group { display: flex; align-items: center; gap: 12px; background: #f0f0f0; padding: 5px 10px; border-radius: 8px; }
         .qtd-btn-group button { border: none; background: none; font-weight: bold; font-size: 1.1rem; color: var(--primary); cursor: pointer; }
-
         .cart-footer-inside { padding: 20px; border-top: 2px solid #eee; background: #fff; }
         .total-price { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; display: flex; justify-content: space-between; }
-        
-        .btn-finish {
-            background: #25d366; color: white; text-align: center; padding: 15px;
-            border-radius: 10px; text-decoration: none; display: block; font-weight: bold; font-size: 1rem;
-            box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);
-        }
+        .btn-finish { background: #25d366; color: white; text-align: center; padding: 15px; border-radius: 10px; text-decoration: none; display: block; font-weight: bold; }
 
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 150; display: none; backdrop-filter: blur(2px); }
         .overlay.active { display: block; }
-        
-        /* Loading animation */
-        #loader { text-align: center; padding: 50px; color: #888; }
+        #loader { text-align: center; padding: 50px; color: #888; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -105,23 +137,32 @@
         </button>
     </header>
 
+    <section class="controls-section">
+        <div class="search-container">
+            <input type="text" id="search-input" placeholder="O que vamos pedir?" oninput="filtrarProdutos()">
+        </div>
+        <div class="filter-chips">
+            <button class="chip active" onclick="setFilter('todos', this)">🍔 Tudo</button>
+            <button class="chip" onclick="setFilter('Bebidas', this)">🥤 Bebidas</button>
+            <button class="chip" onclick="setFilter('Guarnições', this)">🍟 Guarnições</button>
+            <button class="chip" onclick="setFilter('Doces', this)">🍰 Doces</button>
+        </div>
+    </section>
+
     <main class="container">
         <div id="loader">Carregando cardápio...</div>
         <div id="cardapio-grid" class="grid-produtos"></div>
     </main>
 
-    <!-- Estrutura do Carrinho Lateral -->
     <div class="overlay" id="overlay" onclick="toggleCart()"></div>
     <div id="side-cart">
         <div class="cart-header">
             <h3>Meu Pedido</h3>
             <button onclick="toggleCart()" style="background:none; border:none; font-size: 1.5rem; cursor:pointer;">✕</button>
         </div>
-        
         <div class="cart-items-list" id="cart-list">
             <p style="color:#999; text-align:center; margin-top: 50px;">Seu carrinho está vazio.</p>
         </div>
-
         <div class="cart-footer-inside" id="cart-footer" style="display: none;">
             <div class="total-price">
                 <span>Total:</span>
@@ -132,45 +173,75 @@
     </div>
 
     <script>
-        // --- CONFIGURAÇÕES ---
         const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwMzPb9pdNIZENQF5fKwG534op_UQmmYxMscfe3jwaqUopg7ALGMEASTmQiPlmWZNMyhBDMDO68F1M/pub?output=csv";
         const SEU_TELEFONE = "5585987018832"; 
-        // ---------------------
 
+        let todosProdutos = [];
+        let filtroCategoriaAtiva = 'todos';
         let carrinho = {};
 
-        // 1. Busca os dados da Planilha Google
         async function carregarDados() {
             try {
                 const response = await fetch(SHEET_URL);
                 const data = await response.text();
+                const linhas = data.split('\n').filter(l => l.trim() !== "");
                 
-                // Converte CSV para Array de Objetos
-                const linhas = data.split('\n').filter(linha => linha.trim() !== "");
-                const produtos = linhas.slice(1).map(linha => {
+                todosProdutos = linhas.slice(1).map(linha => {
                     const colunas = linha.split(',');
                     return {
-                        nome: colunas[0]?.trim(),
+                        nome: colunas[0]?.trim() || "",
                         preco: parseFloat(colunas[1]),
-                        categoria: colunas[2]?.trim(),
-                        img: colunas[3]?.trim()
+                        categoria: colunas[2]?.trim() || "Outros", // Pega a categoria da coluna C
+                        img: colunas[3]?.trim() || ""
                     };
                 }).filter(p => !isNaN(p.preco));
 
                 document.getElementById('loader').style.display = 'none';
-                renderizarCardapio(produtos);
+                filtrarProdutos();
             } catch (error) {
-                console.error("Erro ao carregar dados:", error);
-                document.getElementById('loader').innerText = "Erro ao carregar cardápio. Verifique o link da planilha.";
+                document.getElementById('loader').innerText = "Erro ao carregar cardápio.";
             }
         }
 
-        // 2. Desenha os produtos na tela
+        // Define o filtro ao clicar no botão
+        function setFilter(categoria, elemento) {
+            filtroCategoriaAtiva = categoria;
+            
+            // Estilização dos botões
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            elemento.classList.add('active');
+            
+            filtrarProdutos(); // Aplica a filtragem
+        }
+
+        // Função Mestra de Filtragem (Botão + Barra de Busca)
+        function filtrarProdutos() {
+            const termoBusca = document.getElementById('search-input').value.toLowerCase().trim();
+            
+            const filtrados = todosProdutos.filter(produto => {
+                // Lógica da Categoria (Botão)
+                const bateCategoria = filtroCategoriaAtiva === 'todos' || 
+                                     produto.categoria.toLowerCase() === filtroCategoriaAtiva.toLowerCase();
+                
+                // Lógica da Busca (Texto)
+                const bateTexto = produto.nome.toLowerCase().includes(termoBusca) || 
+                                  produto.categoria.toLowerCase().includes(termoBusca);
+                
+                return bateCategoria && bateTexto;
+            });
+
+            renderizarCardapio(filtrados);
+        }
+
         function renderizarCardapio(lista) {
             const grid = document.getElementById('cardapio-grid');
+            if (lista.length === 0) {
+                grid.innerHTML = '<p style="grid-column:1/-1; text-align:center; padding:50px; color:#999;">Nenhum item encontrado nesta categoria.</p>';
+                return;
+            }
             grid.innerHTML = lista.map(p => `
                 <article class="card">
-                    <img src="${p.img || 'https://via.placeholder.com/300?text=Sem+Foto'}" alt="${p.nome}">
+                    <img src="${p.img || 'https://via.placeholder.com/300?text=Sem+Foto'}" alt="${p.nome}" loading="lazy">
                     <div class="card-body">
                         <h3>${p.nome}</h3>
                         <div class="card-footer">
@@ -182,7 +253,7 @@
             `).join('');
         }
 
-        // 3. Funções do Carrinho
+        // Funções do Carrinho
         function toggleCart() {
             document.getElementById('side-cart').classList.toggle('open');
             document.getElementById('overlay').classList.toggle('active');
@@ -195,8 +266,6 @@
                 carrinho[nome].qtd++;
             }
             renderCart();
-            // Opcional: Abre o carrinho ao adicionar o primeiro item
-            // if (Object.keys(carrinho).length === 1 && carrinho[nome].qtd === 1) toggleCart();
         }
 
         function changeQtd(nome, delta) {
@@ -219,11 +288,10 @@
                 let subtotal = carrinho[item].qtd * carrinho[item].preco;
                 total += subtotal;
                 itensCount += carrinho[item].qtd;
-
                 list.innerHTML += `
                     <div class="cart-item">
-                        <div class="cart-item-info">
-                            <b>${item}</b>
+                        <div>
+                            <b>${item}</b><br>
                             <small>R$ ${carrinho[item].preco.toFixed(2).replace('.', ',')}</small>
                         </div>
                         <div class="qtd-btn-group">
@@ -231,37 +299,27 @@
                             <span>${carrinho[item].qtd}</span>
                             <button onclick="changeQtd('${item}', 1)">+</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }
 
             badge.innerText = itensCount;
             totalVal.innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
             footer.style.display = total > 0 ? 'block' : 'none';
-            
-            if (total === 0) {
-                list.innerHTML = '<p style="color:#999; text-align:center; margin-top: 50px;">Seu carrinho está vazio.</p>';
-            }
+            if (total === 0) list.innerHTML = '<p style="color:#999; text-align:center; margin-top: 50px;">Seu carrinho está vazio.</p>';
         }
 
-        // 4. Envia o pedido formatado para o WhatsApp
         function enviarPedido() {
+            let msg = "🍕 *NOVO PEDIDO* %0A%0A";
             let totalPedido = 0;
-            let msg = "🍕 *NOVO PEDIDO - LANCHONETE* %0A%0A";
-            
             for (let item in carrinho) {
                 let sub = carrinho[item].qtd * carrinho[item].preco;
-                msg += `✅ *${carrinho[item].qtd}x* ${item} (R$ ${sub.toFixed(2)})%0A`;
+                msg += `✅ *${carrinho[item].qtd}x* ${item} - R$ ${sub.toFixed(2)}%0A`;
                 totalPedido += sub;
             }
-            
-            msg += `%0A━━━━━━━━━━━━━━━%0A💰 *TOTAL DO PEDIDO: R$ ${totalPedido.toFixed(2)}* %0A━━━━━━━━━━━━━━━%0A%0A*Por favor, confirme meu pedido!*`;
-            
-            const url = `https://wa.me/${SEU_TELEFONE}?text=${msg}`;
-            window.open(url, '_blank');
+            msg += `%0A💰 *TOTAL: R$ ${totalPedido.toFixed(2).replace('.', ',')}*`;
+            window.open(`https://wa.me/${SEU_TELEFONE}?text=${msg}`, '_blank');
         }
 
-        // Inicia o sistema
         carregarDados();
     </script>
 </body>
