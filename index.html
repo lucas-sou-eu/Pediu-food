@@ -42,7 +42,15 @@
         .card { background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column; }
         .card img { width: 100%; height: 130px; object-fit: cover; background: #eee; }
         .card-body { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; }
-        .card-body h3 { font-size: 0.95rem; margin-bottom: 8px; min-height: 40px; }
+        .card-body h3 { font-size: 0.95rem; margin-bottom: 4px; }
+        
+        /* ESTILO DA DESCRIÇÃO */
+        .produto-desc {
+            font-size: 0.75rem; color: #666; margin-bottom: 10px;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+            overflow: hidden; min-height: 32px; line-height: 1.2;
+        }
+
         .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
         .preco { font-weight: 700; color: var(--primary); }
         .btn-add { background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; }
@@ -62,7 +70,7 @@
             position: fixed; bottom: -110%; left: 0; width: 100%; height: 90%;
             background: white; z-index: 300; border-radius: 25px 25px 0 0;
             transition: 0.4s cubic-bezier(0.25, 1, 0.5, 1); padding: 20px;
-            display: flex; flex-direction: column;
+            display: flex; flex-direction: column; box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
         }
         #modal-detalhes.open { bottom: 0; }
         .modal-scroll { overflow-y: auto; flex-grow: 1; margin: 10px 0; }
@@ -102,7 +110,7 @@
 
     <section class="controls-section">
         <div class="search-container">
-            <input type="text" id="search-input" placeholder="O que você deseja hoje?" oninput="filtrarProdutos()">
+            <input type="text" id="search-input" placeholder="Buscar por nome, sabor ou categoria..." oninput="filtrarProdutos()">
         </div>
         <div class="filter-chips">
             <button class="chip active" onclick="setFilter('Guarnições', this)">🍟 Guarnições</button>
@@ -118,6 +126,7 @@
 
     <div class="overlay" id="overlay" onclick="closeAll()"></div>
 
+    <!-- Carrinho Lateral -->
     <div id="side-cart">
         <div class="cart-header">
             <h3>Seu Pedido</h3>
@@ -133,16 +142,15 @@
         </div>
     </div>
 
+    <!-- Modal de Personalização -->
     <div id="modal-detalhes">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h2 id="modal-titulo" style="font-size: 1.2rem;">Personalizar</h2>
             <button onclick="closeModal()" style="border:none; background:none; font-size:1.8rem;">✕</button>
         </div>
-        
         <div class="modal-scroll" id="modal-corpo"></div>
-
         <div class="modal-footer">
-            <p style="text-align: center; color: #888; font-size: 0.8rem; margin-bottom: 10px;">Quantidade:</p>
+            <p style="text-align: center; color: #888; font-size: 0.8rem; margin-bottom: 10px;">Quantidade deste item:</p>
             <div class="modal-qtd-selector">
                 <button onclick="mudarQtdModal(-1)">−</button>
                 <span id="modal-qtd-val">1</span>
@@ -177,7 +185,8 @@
                         img: colunas[3]?.trim() || "",
                         opcionais: colunas[4] ? colunas[4].trim().split(';') : [],
                         tamanhos: colunas[5] ? colunas[5].trim().split(';') : [],
-                        sabores: colunas[6] ? colunas[6].trim().split(';') : []
+                        sabores: colunas[6] ? colunas[6].trim().split(';') : [],
+                        descricao: colunas[7]?.trim() || "" // COLUNA H
                     };
                 }).filter(p => !isNaN(p.preco));
 
@@ -192,15 +201,25 @@
             filtroCategoriaAtiva = cat;
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
             el.classList.add('active');
+            document.getElementById('search-input').value = ""; // Limpa busca ao trocar categoria
             filtrarProdutos();
         }
 
         function filtrarProdutos() {
-            const termo = document.getElementById('search-input').value.toLowerCase();
-            const filtrados = todosProdutos.filter(p => 
-                p.categoria.toLowerCase() === filtroCategoriaAtiva.toLowerCase() &&
-                p.nome.toLowerCase().includes(termo)
-            );
+            const termo = document.getElementById('search-input').value
+                .toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            const filtrados = todosProdutos.filter(p => {
+                const searchString = (p.nome + p.categoria + p.descricao + p.sabores.join(' ')).toLowerCase()
+                    .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+                if (termo.length > 0) {
+                    return searchString.includes(termo);
+                } else {
+                    return p.categoria.toLowerCase() === filtroCategoriaAtiva.toLowerCase();
+                }
+            });
             renderizar(filtrados);
         }
 
@@ -208,11 +227,12 @@
             const grid = document.getElementById('cardapio-grid');
             grid.innerHTML = lista.map(p => `
                 <article class="card">
-                    <img src="${p.img || 'https://via.placeholder.com/300?text=S-Imagem'}" alt="${p.nome}">
+                    <img src="${p.img || 'https://via.placeholder.com/300?text=PEDIU-FOOD'}" alt="${p.nome}">
                     <div class="card-body">
                         <h3>${p.nome}</h3>
+                        <p class="produto-desc">${p.descricao}</p>
                         <div class="card-footer">
-                            <span class="preco">A partir de R$ ${p.preco.toFixed(2).replace('.', ',')}</span>
+                            <span class="preco">R$ ${p.preco.toFixed(2).replace('.', ',')}</span>
                             <button class="btn-add" onclick="openModal('${p.nome}')">Pedir</button>
                         </div>
                     </div>
@@ -231,26 +251,22 @@
             const corpo = document.getElementById('modal-corpo');
             corpo.innerHTML = '';
 
-            // TAMANHOS COM PREÇOS DIFERENCIADOS (Coluna F)
+            // 1. TAMANHOS (Coluna F) - Detecta preço em parênteses: Grande(35.00)
             if (p.tamanhos.length > 0 && p.tamanhos[0] !== "") {
                 corpo.innerHTML += `<div class="section-title">Escolha o Tamanho:</div>`;
                 p.tamanhos.forEach((tamRaw, index) => {
                     const partes = tamRaw.split('(');
                     const nomeTam = partes[0].trim();
                     const precoTam = partes[1] ? partes[1].replace(')', '') : p.preco;
-
                     corpo.innerHTML += `
                         <label class="opcao-row">
                             <span>${nomeTam} - <small>R$ ${parseFloat(precoTam).toFixed(2).replace('.',',')}</small></span>
-                            <input type="radio" name="radio-tamanho" 
-                                   data-preco="${precoTam}" 
-                                   data-nome="${nomeTam}" 
-                                   value="${nomeTam}" ${index === 0 ? 'checked' : ''}>
+                            <input type="radio" name="radio-tamanho" data-preco="${precoTam}" data-nome="${nomeTam}" value="${nomeTam}" ${index === 0 ? 'checked' : ''}>
                         </label>`;
                 });
             }
 
-            // SABORES (Coluna G)
+            // 2. SABORES (Coluna G)
             if (p.sabores.length > 0 && p.sabores[0] !== "") {
                 corpo.innerHTML += `<div class="section-title">Escolha o Sabor:</div>`;
                 p.sabores.forEach((sabor, index) => {
@@ -258,7 +274,7 @@
                 });
             }
 
-            // OPCIONAIS (Coluna E)
+            // 3. OPCIONAIS (Coluna E)
             if (p.opcionais.length > 0 && p.opcionais[0] !== "") {
                 corpo.innerHTML += `<div class="section-title">Opcionais:</div>`;
                 p.opcionais.forEach(op => {
@@ -298,7 +314,6 @@
                     detalhes: extras
                 };
             }
-
             renderCart();
             closeAll();
         }
@@ -307,7 +322,6 @@
             const container = document.getElementById('cart-list');
             const totalText = document.getElementById('total-val');
             const badge = document.getElementById('cart-count');
-            
             container.innerHTML = '';
             let total = 0, qtdTotal = 0;
 
@@ -329,7 +343,6 @@
                         </div>
                     </div>`;
             }
-
             badge.innerText = qtdTotal;
             totalText.innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
             if (qtdTotal === 0) container.innerHTML = '<p style="text-align:center; color:#999; margin-top:30px;">Vazio</p>';
@@ -359,7 +372,6 @@
 
         function enviarPedido() {
             if (Object.keys(carrinho).length === 0) return;
-
             let totalGeral = 0;
             let texto = "🚀 *NOVO PEDIDO - PEDIU FOOD* %0A%0A";
 
@@ -371,7 +383,6 @@
                 texto += `   Subtotal: R$ ${subtotal.toFixed(2).replace('.', ',')}%0A%0A`;
                 totalGeral += subtotal;
             }
-
             texto += `💰 *TOTAL: R$ ${totalGeral.toFixed(2).replace('.', ',')}*`;
             window.open(`https://wa.me/${SEU_TELEFONE}?text=${texto}`, '_blank');
         }
